@@ -2,18 +2,22 @@
 % random forest as a preference model
 % 
 
+%%
+%  val = double(50)/127;
+% val = int64(0.7 * 379)
+
 %% put the names of datasets in a cell array of strings
-datasets_names = {
-    'BreastCancerWisconsinDownsampled' 'CarEvaluation'
-    'CreditApprovalDownsampledFurther' 'GermanCreditDownsampledFurther'
-    'IonosphereDownsampledFurther' 'MammographicMassDownsampled'
-    'MushroomDownsampled' 'NurseryDownsampledFurther'
-    'SpectHeartDownsampledFurther' 'TicTacToe'
-    'VehicleDownsampledFurther' 'WineDownsampled'
-};
 % datasets_names = {
-%     'GermanCreditDownsampledFurther' 'IonosphereDownsampledFurther' 'MammographicMassDownsampled' 'MushroomDownsampled' 'NurseryDownsampledFurther' 'SpectHeartDownsampledFurther' 'TicTacToe' 'VehicleDownsampledFurther' 'WineDownsampled'
+%     'BreastCancerWisconsinDownsampled' 'CarEvaluation'
+%     'CreditApprovalDownsampledFurther' 'GermanCreditDownsampledFurther'
+%     'IonosphereDownsampledFurther' 'MammographicMassDownsampled'
+%     'MushroomDownsampled' 'NurseryDownsampledFurther'
+%     'SpectHeartDownsampledFurther' 'TicTacToe'
+%     'VehicleDownsampledFurther' 'WineDownsampled'
 % };
+datasets_names = {
+    'TicTacToe'
+};
 
 %%
 for kx = 1:numel(datasets_names)
@@ -116,13 +120,6 @@ for kx = 1:numel(datasets_names)
     
     num_sample_sizes = 1;
     sample_sizes_array = zeros(1,num_sample_sizes);
-%     for ix = 1:num_sample_sizes
-%         if (ix >= 1) && (ix < 10)
-%             sample_sizes_array(ix) = ix;
-%         else
-%             sample_sizes_array(ix) = 10 + (ix-10) * 10;
-%         end
-%     end
     sample_sizes_array(1) = int64(0.7 * num_samples);
     
     % load and convert examples
@@ -154,14 +151,14 @@ for kx = 1:numel(datasets_names)
             % train_data_doubled = [train_data; train_data_flipped];
             % train_labels_doubled = [train_labels; train_labels_flipped];
             
-            num_trees = 1;
-%             B = TreeBagger(num_trees, train_data, train_labels);
-            tc = fitctree(train_data, train_labels);
+            num_trees = 100;
+            B = TreeBagger(num_trees, train_data, train_labels, 'fboot', double(50)/size(train_data, 1), 'samplewithreplacement', 'off');
+%             tc = fitctree(train_data, train_labels);
             
-            preds_train = predict(tc, train_data);
-%             preds_train = cellfun(@(x) str2double(x), preds_train);
-            preds_test = predict(tc, test_data);
-%             preds_test = cellfun(@(x) str2double(x), preds_test);
+            preds_train = predict(B, train_data);
+            preds_train = cellfun(@(x) str2double(x), preds_train);
+            preds_test = predict(B, test_data);
+            preds_test = cellfun(@(x) str2double(x), preds_test);
             
             sum_accuracy_train = sum_accuracy_train + sum(preds_train == train_labels)/numel(train_labels);
             sum_accuracy_test = sum_accuracy_test + sum(preds_test == test_labels)/numel(test_labels);

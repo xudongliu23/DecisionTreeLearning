@@ -1,0 +1,2 @@
+SampleSize,DT-Training%,DT-Testing%
+2237,0.99759,0.99213

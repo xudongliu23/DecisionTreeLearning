@@ -3,21 +3,21 @@
 % 
 
 %% put the names of datasets in a cell array of strings
-datasets_names = {
-    'BreastCancerWisconsinDownsampled' 'CarEvaluation'
-    'CreditApprovalDownsampledFurther' 'GermanCreditDownsampledFurther'
-    'IonosphereDownsampledFurther' 'MammographicMassDownsampled'
-    'MushroomDownsampled' 'NurseryDownsampledFurther'
-    'SpectHeartDownsampledFurther' 'TicTacToe'
-    'VehicleDownsampledFurther' 'WineDownsampled'
-};
 % datasets_names = {
-%     'GermanCreditDownsampledFurther' 'IonosphereDownsampledFurther' 'MammographicMassDownsampled' 'MushroomDownsampled' 'NurseryDownsampledFurther' 'SpectHeartDownsampledFurther' 'TicTacToe' 'VehicleDownsampledFurther' 'WineDownsampled'
+%     'BreastCancerWisconsinDownsampled' 'CarEvaluation'
+%     'CreditApprovalDownsampledFurther' 'GermanCreditDownsampledFurther'
+%     'IonosphereDownsampledFurther' 'MammographicMassDownsampled'
+%     'MushroomDownsampled' 'NurseryDownsampledFurther'
+%     'SpectHeartDownsampledFurther' 'TicTacToe'
+%     'VehicleDownsampledFurther' 'WineDownsampled'
 % };
+datasets_names = {
+    'CarEvaluation'
+};
 
 %%
 for kx = 1:numel(datasets_names)
-    metadata_filename =  '/home/xudong/Codes/PrefLearnLib_Generator/PrefLearnLib/UCI/';
+    metadata_filename =  '/Users/xudong/Codes/PrefLearnLibGenerator/PrefLearnLib/UCI/';
     metadata_filename = strcat(metadata_filename,datasets_names(kx));
     metadata_filename = strcat(metadata_filename,'/domain_description.txt');
     
@@ -58,7 +58,7 @@ for kx = 1:numel(datasets_names)
     end
     
     % dataset
-    data_filename =  '/home/xudong/Codes/PrefLearnLib_Generator/PrefLearnLib/UCI/';
+    data_filename =  '/Users/xudong/Codes/PrefLearnLibGenerator/PrefLearnLib/UCI/';
     data_filename = strcat(data_filename,datasets_names(kx));
     data_filename = strcat(data_filename,'/outcomes.csv');
 %     data_strings_cell = importdata(char(data_filename));
@@ -90,7 +90,7 @@ for kx = 1:numel(datasets_names)
     new_data = cat(1, new_data{:});
     
     % preferences, first column is preferred
-    preferences_filename = '/home/xudong/Codes/PrefLearnLib_Generator/PrefLearnLib/UCI/';
+    preferences_filename = '/Users/xudong/Codes/PrefLearnLibGenerator/PrefLearnLib/UCI/';
     preferences_filename = strcat(preferences_filename,datasets_names(kx));
     preferences_filename = strcat(preferences_filename,'/strict_examples.csv');
     preferences = importdata(char(preferences_filename));
@@ -127,7 +127,7 @@ for kx = 1:numel(datasets_names)
     
     % load and convert examples
     
-    rep = 20;
+    rep = 1;
     C1 = {'SampleSize', 'DT-Training%', 'DT-Testing%'};
     for ix = 1:numel(sample_sizes_array)
         C2 = cell(1,3);
@@ -167,7 +167,7 @@ for kx = 1:numel(datasets_names)
             sum_accuracy_test = sum_accuracy_test + sum(preds_test == test_labels)/numel(test_labels);
             
 %             view(B.Trees{1}, 'mode', 'graph')
-%             view(tc,'Mode','Graph')
+            view(tc,'Mode','Graph')
         end
         C2{1,1} = sample_sizes_array(ix);
         C2{1,2} = sum_accuracy_train/rep;
@@ -177,12 +177,12 @@ for kx = 1:numel(datasets_names)
     end
     
     % write results to file
-    result_filename = '/home/xudong/Codes/DecisionTreeLearning/';
-    result_filename = strcat(result_filename,datasets_names(kx));
-    result_filename = strcat(result_filename,'/sum.txt');
-    fid = fopen(char(result_filename), 'w') ;
-    fprintf(fid, '%s,', C1{1,1:end-1}) ;
-    fprintf(fid, '%s\n', C1{1,end}) ;
-    fclose(fid) ;
-    dlmwrite(char(result_filename), C1(2:end,:), '-append') ;
+%     result_filename = '/Users/xudong/Codes/DecisionTreeLearning/';
+%     result_filename = strcat(result_filename,datasets_names(kx));
+%     result_filename = strcat(result_filename,'/sumDT.txt');
+%     fid = fopen(char(result_filename), 'w') ;
+%     fprintf(fid, '%s,', C1{1,1:end-1}) ;
+%     fprintf(fid, '%s\n', C1{1,end}) ;
+%     fclose(fid) ;
+%     dlmwrite(char(result_filename), C1(2:end,:), '-append') ;
 end

@@ -7,21 +7,21 @@
 % val = int64(0.7 * 379)
 
 %% put the names of datasets in a cell array of strings
-% datasets_names = {
-%     'BreastCancerWisconsinDownsampled' 'CarEvaluation'
-%     'CreditApprovalDownsampledFurther' 'GermanCreditDownsampledFurther'
-%     'IonosphereDownsampledFurther' 'MammographicMassDownsampled'
-%     'MushroomDownsampled' 'NurseryDownsampledFurther'
-%     'SpectHeartDownsampledFurther' 'TicTacToe'
-%     'VehicleDownsampledFurther' 'WineDownsampled'
-% };
 datasets_names = {
-    'TicTacToe'
+    'BreastCancerWisconsinDownsampled' 'CarEvaluation'
+    'CreditApprovalDownsampledFurther' 'GermanCreditDownsampledFurther'
+    'IonosphereDownsampledFurther' 'MammographicMassDownsampled'
+    'MushroomDownsampled' 'NurseryDownsampledFurther'
+    'SpectHeartDownsampledFurther' 'TicTacToe'
+    'VehicleDownsampledFurther' 'WineDownsampled'
 };
+%datasets_names = {
+%    'TicTacToe'
+%};
 
 %%
 for kx = 1:numel(datasets_names)
-    metadata_filename =  '/home/xudong/Codes/PrefLearnLib_Generator/PrefLearnLib/UCI/';
+    metadata_filename =  '/Users/n01237497/Codes/PrefLearnLibGenerator/PrefLearnLib/UCI/';
     metadata_filename = strcat(metadata_filename,datasets_names(kx));
     metadata_filename = strcat(metadata_filename,'/domain_description.txt');
     
@@ -62,7 +62,7 @@ for kx = 1:numel(datasets_names)
     end
     
     % dataset
-    data_filename =  '/home/xudong/Codes/PrefLearnLib_Generator/PrefLearnLib/UCI/';
+    data_filename =  '/Users/n01237497/Codes/PrefLearnLibGenerator/PrefLearnLib/UCI/';
     data_filename = strcat(data_filename,datasets_names(kx));
     data_filename = strcat(data_filename,'/outcomes.csv');
 %     data_strings_cell = importdata(char(data_filename));
@@ -94,7 +94,7 @@ for kx = 1:numel(datasets_names)
     new_data = cat(1, new_data{:});
     
     % preferences, first column is preferred
-    preferences_filename = '/home/xudong/Codes/PrefLearnLib_Generator/PrefLearnLib/UCI/';
+    preferences_filename = '/Users/n01237497/Codes/PrefLearnLibGenerator/PrefLearnLib/UCI/';
     preferences_filename = strcat(preferences_filename,datasets_names(kx));
     preferences_filename = strcat(preferences_filename,'/strict_examples.csv');
     preferences = importdata(char(preferences_filename));
@@ -124,59 +124,66 @@ for kx = 1:numel(datasets_names)
     
     % load and convert examples
     
-    rep = 20;
-    C1 = {'SampleSize', 'DT-Training%', 'DT-Testing%'};
+    rep = 10;
+    C1 = {'SampleSize', 'ForestSize', 'DT-Training%', 'DT-Testing%'};
     for ix = 1:numel(sample_sizes_array)
-        C2 = cell(1,3);
-        sum_accuracy_train = 0;
-        sum_accuracy_test = 0;
-        for jx = 1:rep
-            % randomly split
-            rp = randperm(num_samples);
-            % train_inds = rp(1:round(num_samples*.7));
-            % test_inds = rp(round(num_samples*.7)+1:end);
-            train_inds = rp(1:sample_sizes_array(ix));
-            test_inds = rp(sample_sizes_array(ix)+1:end);
+        forest_sizes = [1:1:9 10:10:90 100:100:1000];
+        for I = 1:numel(forest_sizes)
+            C2 = cell(1,4);
+            sum_accuracy_train = 0;
+            sum_accuracy_test = 0;
+            for jx = 1:rep
+                % randomly split
+                rp = randperm(num_samples);
+                % train_inds = rp(1:round(num_samples*.7));
+                % test_inds = rp(round(num_samples*.7)+1:end);
+                train_inds = rp(1:sample_sizes_array(ix));
+                test_inds = rp(sample_sizes_array(ix)+1:end);
+                
+                train_data = features(train_inds, :);
+                train_labels = labels(train_inds);
+                test_data = features(test_inds, :);
+                test_labels = labels(test_inds);
+                
+                % train_data = train_data(:, 1:6)-train_data(:,7:end);
+                % test_data = test_data(:, 1:6)-test_data(:,7:end);
+                
+                % train_data_flipped = [train_data(:, 7:end) train_data(:, 1:6)];
+                % train_labels_flipped = ~train_labels;
+                % train_data_doubled = [train_data; train_data_flipped];
+                % train_labels_doubled = [train_labels; train_labels_flipped];
+                
+                
+                %num_trees = 100;
+                
+                B = TreeBagger(forest_sizes(I), train_data, train_labels, 'fboot', double(50)/size(train_data, 1), 'samplewithreplacement', 'off');
+                %             tc = fitctree(train_data, train_labels);
+                
+                preds_train = predict(B, train_data);
+                preds_train = cellfun(@(x) str2double(x), preds_train);
+                preds_test = predict(B, test_data);
+                preds_test = cellfun(@(x) str2double(x), preds_test);
+                
+                sum_accuracy_train = sum_accuracy_train + sum(preds_train == train_labels)/numel(train_labels);
+                sum_accuracy_test = sum_accuracy_test + sum(preds_test == test_labels)/numel(test_labels);
+            end
             
-            train_data = features(train_inds, :);
-            train_labels = labels(train_inds);
-            test_data = features(test_inds, :);
-            test_labels = labels(test_inds);
-            
-            % train_data = train_data(:, 1:6)-train_data(:,7:end);
-            % test_data = test_data(:, 1:6)-test_data(:,7:end);
-            
-            % train_data_flipped = [train_data(:, 7:end) train_data(:, 1:6)];
-            % train_labels_flipped = ~train_labels;
-            % train_data_doubled = [train_data; train_data_flipped];
-            % train_labels_doubled = [train_labels; train_labels_flipped];
-            
-            num_trees = 100;
-            B = TreeBagger(num_trees, train_data, train_labels, 'fboot', double(50)/size(train_data, 1), 'samplewithreplacement', 'off');
-%             tc = fitctree(train_data, train_labels);
-            
-            preds_train = predict(B, train_data);
-            preds_train = cellfun(@(x) str2double(x), preds_train);
-            preds_test = predict(B, test_data);
-            preds_test = cellfun(@(x) str2double(x), preds_test);
-            
-            sum_accuracy_train = sum_accuracy_train + sum(preds_train == train_labels)/numel(train_labels);
-            sum_accuracy_test = sum_accuracy_test + sum(preds_test == test_labels)/numel(test_labels);
-            
-%             view(B.Trees{1}, 'mode', 'graph')
-%             view(tc,'Mode','Graph')
+            %             view(B.Trees{1}, 'mode', 'graph')
+            %             view(tc,'Mode','Graph')
+            C2{1,1} = sample_sizes_array(ix);
+            C2{1,2} = forest_sizes(I);
+            C2{1,3} = sum_accuracy_train/rep;
+            C2{1,4} = sum_accuracy_test/rep;
+            C1 = [C1;C2];
+            %     celldisp(sum_accuracy_testing/rep)
         end
-        C2{1,1} = sample_sizes_array(ix);
-        C2{1,2} = sum_accuracy_train/rep;
-        C2{1,3} = sum_accuracy_test/rep;
-        C1 = [C1;C2];
-        %     celldisp(sum_accuracy_testing/rep)
+        
     end
     
     % write results to file
-    result_filename = '/home/xudong/Codes/DecisionTreeLearning/';
+    result_filename = '/Users/n01237497/Codes/DecisionTreeLearning/';
     result_filename = strcat(result_filename,datasets_names(kx));
-    result_filename = strcat(result_filename,'/sum.txt');
+    result_filename = strcat(result_filename,'/sumRF.txt');
     fid = fopen(char(result_filename), 'w') ;
     fprintf(fid, '%s,', C1{1,1:end-1}) ;
     fprintf(fid, '%s\n', C1{1,end}) ;

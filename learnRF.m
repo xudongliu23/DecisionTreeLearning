@@ -125,7 +125,7 @@ for kx = 1:numel(datasets_names)
     % load and convert examples
     
     rep = 10;
-    C1 = {'SampleSize', 'ForestSize', 'DT-Training%', 'DT-Testing%'};
+    C1 = {'SampleSize', 'ForestSize', 'RF-Training%', 'RF-Testing%'};
     for ix = 1:numel(sample_sizes_array)
         forest_sizes = [1:1:9 10:10:90 100:100:1000];
         for I = 1:numel(forest_sizes)
@@ -156,7 +156,7 @@ for kx = 1:numel(datasets_names)
                 
                 %num_trees = 100;
                 
-                B = TreeBagger(forest_sizes(I), train_data, train_labels, 'fboot', double(50)/size(train_data, 1), 'samplewithreplacement', 'off');
+                B = TreeBagger(forest_sizes(I), train_data, train_labels);
                 %             tc = fitctree(train_data, train_labels);
                 
                 preds_train = predict(B, train_data);
@@ -183,7 +183,7 @@ for kx = 1:numel(datasets_names)
     % write results to file
     result_filename = '/Users/n01237497/Codes/DecisionTreeLearning/';
     result_filename = strcat(result_filename,datasets_names(kx));
-    result_filename = strcat(result_filename,'/sumRF.txt');
+    result_filename = strcat(result_filename,'/sumRF0.txt');
     fid = fopen(char(result_filename), 'w') ;
     fprintf(fid, '%s,', C1{1,1:end-1}) ;
     fprintf(fid, '%s\n', C1{1,end}) ;
